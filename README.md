@@ -1,6 +1,6 @@
 # Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance
 
-This is the official anonymous repository for **“Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance.”** It includes the salience prediction module, the salience-aware LLaVA model, and three salience-aware image-captioning datasets: **Salience COCO**, **Salience Flickr**, and **Salience VizWiz**.
+This is the official anonymous repository for **“Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance.”** It includes the salience prediction module, the salience-aware LLaVA model, and three salience-aware image-captioning [Dataset](https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing): **Salience COCO**, **Salience Flickr**, and **Salience VizWiz**. 
 
 ---
 
@@ -140,6 +140,4 @@ python src/eval/run_eval.py \
 ```
 
 Repeat with `--dataset salience_flickr` or `--dataset salience_vizwiz` to evaluate on the other two benchmarks. Full quantitative tables and ablations are reported in the paper.
----
 
-## [Dataset](https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing)
