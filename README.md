@@ -140,3 +140,5 @@ python src/eval/run_eval.py \
 ```
 
 Repeat with `--dataset salience_flickr` or `--dataset salience_vizwiz` to evaluate on the other two benchmarks. Full quantitative tables and ablations are reported in the paper.
+
+### Dataset: https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing
