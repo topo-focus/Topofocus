@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance</title>
+  <meta name="description" content="Salience-LLaVA: a salience-driven vision-language model with three salience-aware datasets (Salience COCO, Salience Flickr, Salience VizWiz), the SCMI metric, and a real-world assistive glasses deployment.">
+  <meta property="og:title" content="Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance">
+  <meta property="og:description" content="Salience-LLaVA generates human-centered captions that describe scene objects in order of importance for blind and low vision users.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text: #1f2328;
+      --muted: #57606a;
+      --accent: #1a56db;
+      --accent-dark: #1e429f;
+      --bg: #ffffff;
+      --bg-soft: #f6f8fa;
+      --border: #d8dee4;
+      --maxw: 980px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.65;
+      font-size: 17px;
+    }
+    .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+    /* ---------- Header ---------- */
+    header { padding: 56px 0 8px; text-align: center; }
+    h1.title {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    h1.title .subtitle-line { display: block; font-size: 0.78em; font-weight: 600; color: var(--accent-dark); margin-top: 6px; }
+    .venue {
+      display: inline-block;
+      margin: 14px 0 22px;
+      padding: 5px 16px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .authors { font-size: 1.05rem; line-height: 1.9; max-width: 860px; margin: 0 auto; }
+    .authors a { color: var(--accent); text-decoration: none; }
+    .authors a:hover { text-decoration: underline; }
+    .authors sup { font-size: 0.72em; color: var(--muted); }
+    .affiliations { margin-top: 14px; font-size: 0.92rem; color: var(--muted); line-height: 1.7; max-width: 820px; margin-left: auto; margin-right: auto; }
+    .author-notes { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+
+    .links { margin: 28px 0 10px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: #1f2328;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background .15s ease, transform .15s ease;
+    }
+    .btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* ---------- Sections ---------- */
+    section { padding: 34px 0; }
+    section.alt { background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    h2 {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    h3 { font-size: 1.12rem; font-weight: 700; margin: 26px 0 10px; }
+    p.body-text { margin: 0 auto 16px; max-width: 860px; text-align: justify; }
+    .figure { margin: 26px auto 8px; text-align: center; }
+    .figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 8px;
+    }
+    .figure figcaption {
+      max-width: 860px;
+      margin: 12px auto 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: justify;
+    }
+    .figure.narrow img { max-width: 440px; }
+    .fig-row { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; align-items: flex-start; }
+    .fig-row .figure { flex: 1 1 380px; max-width: 480px; margin-top: 10px; }
+
+    /* ---------- Highlights ---------- */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 16px; margin-top: 8px; }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 18px;
+    }
+    .card .icon { font-size: 1.6rem; }
+    .card h4 { font-size: 1rem; margin: 8px 0 6px; }
+    .card p { font-size: 0.88rem; color: var(--muted); }
+
+    /* ---------- Tables ---------- */
+    .table-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--border); border-radius: 10px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.83rem; background: #fff; }
+    caption { caption-side: top; text-align: left; padding: 12px 14px 8px; font-size: 0.9rem; color: var(--muted); }
+    th, td { padding: 6px 10px; text-align: center; white-space: nowrap; }
+    thead th { background: var(--bg-soft); border-bottom: 2px solid var(--border); font-weight: 700; }
+    tbody tr:nth-child(even) { background: #fafbfc; }
+    tbody td:first-child, tbody th[scope="row"] { text-align: left; font-weight: 500; }
+    tr.ours { background: #eef4ff !important; font-weight: 700; }
+    td.group { text-align: left; font-weight: 700; background: var(--bg-soft); border-top: 2px solid var(--border); }
+    .best { font-weight: 700; color: var(--accent-dark); }
+
+    /* ---------- BibTeX ---------- */
+    pre.bibtex {
+      background: #0d1117;
+      color: #d1d9e0;
+      border-radius: 12px;
+      padding: 22px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    footer { padding: 34px 0 44px; text-align: center; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="container">
+    <h1 class="title">Focus Where It Counts:<span class="subtitle-line">A Salience-Driven Vision-Language Model for Low Vision Assistance</span></h1>
+    <div class="venue">IEEE Transactions on Neural Networks and Learning Systems (TNNLS)</div>
+    <div class="authors">
+      Jiazhao Liang<sup>&dagger;1</sup>, Hao Huang<sup>&dagger;2</sup>, Shuaihang Yuan<sup>&dagger;2</sup>, Congcong Wen<sup>*2</sup>, Geeta Chandra Raju Bethala<sup>2</sup>,<br>
+      Giles Hamilton-Fletcher<sup>3</sup>, Yu Hao<sup>2</sup>, John-Ross Rizzo<sup>3</sup>, Mengyu Wang<sup>4</sup>, Anthony Tzes<sup>2</sup>, Yi Fang<sup>*2</sup>
+    </div>
+    <div class="affiliations">
+      <sup>1</sup>New York University Tandon School of Engineering &nbsp;&middot;&nbsp;
+      <sup>2</sup>NYUAD Center for Artificial Intelligence and Robotics (CAIR) &amp; Embodied AI and Robotics (AIR) Lab, New York University Abu Dhabi<br>
+      <sup>3</sup>NYU Grossman School of Medicine, NYU Langone Health &nbsp;&middot;&nbsp;
+      <sup>4</sup>Harvard AI and Robotics Lab, Harvard University
+    </div>
+    <div class="author-notes"><sup>&dagger;</sup>Equal contribution &nbsp;&nbsp; <sup>*</sup>Corresponding authors: Congcong Wen (cw3437@nyu.edu), Yi Fang (yfang@nyu.edu)</div>
+
+    <div class="links">
+      <a class="btn" href="#" title="Paper link coming soon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+        Paper
+      </a>
+      <a class="btn" href="https://github.com/topo-focus/Topofocus" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        Code
+      </a>
+      <a class="btn" href="https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+        Datasets
+      </a>
+    </div>
+  </header>
+
+  <!-- ============ TEASER ============ -->
+  <section class="container">
+    <figure class="figure narrow">
+      <img src="static/images/SLLAVA3.png" alt="Comparison of image descriptions generated by the original LLaVA and Salience-LLaVA on a street-crossing scene.">
+      <figcaption><b>Human-centered captioning.</b> A human annotator ranks the salient objects in this street-crossing scene as <i>Crosswalk &rarr; Traffic Light &rarr; People &rarr; Bicycle</i>. The original LLaVA caption starts with <i>People</i> and deviates from this priority, while Salience-LLaVA describes the <i>Crosswalk</i> and <i>Traffic Light</i> first &mdash; matching how low vision users need safety-critical information delivered.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ ABSTRACT ============ -->
+  <section class="alt">
+    <div class="container">
+      <h2>Abstract</h2>
+      <p class="body-text">
+        Vision-language models (VLMs) are rapidly progressing and offer promising capabilities for assistive technologies supporting persons with blindness or low vision. However, existing VLMs are primarily designed for general-purpose captioning and do not explicitly model human perceptual priorities, limiting their ability to emphasize the most relevant information in a scene. To address this gap, we propose a salience-driven captioning framework that prioritizes scene elements according to their importance for human-centered assistance. We curate three salience-aware datasets, namely <b>Salience COCO</b>, <b>Salience Flickr</b>, and <b>Salience VizWiz</b>, with object-level salience annotations designed to reflect the visual information most relevant to low vision users across different environments. Building on these datasets, we introduce <b>Salience-LLaVA</b>, a salience-aware vision-language model that incorporates salience cues to generate captions in which important elements are mentioned in order of importance. Our work makes four main contributions: we build salience-aware datasets verified by low vision participants, propose Salience-LLaVA to describe objects in order of importance, introduce <b>SCMI</b> to evaluate ordering accuracy, and deploy the system on assistive glasses to demonstrate real-world practicality.
+      </p>
+      <div class="cards">
+        <div class="card"><div class="icon">&#128218;</div><h4>Salience-Aware Datasets</h4><p>Salience COCO, Salience Flickr &amp; Salience VizWiz with object-level salience rankings, verified by low vision participants (Cohen's &kappa; = 0.70).</p></div>
+        <div class="card"><div class="icon">&#129504;</div><h4>Salience-LLaVA</h4><p>A dual-branch VLM that fuses QAGNet saliency features with CLIP-ViT visual features so captions follow human importance ordering.</p></div>
+        <div class="card"><div class="icon">&#128207;</div><h4>SCMI Metric</h4><p>The Salience Coherent Match Index (plus a Wu-Palmer variant) measures whether captions mention key objects in the correct salience order.</p></div>
+        <div class="card"><div class="icon">&#128083;</div><h4>Assistive Glasses</h4><p>Deployed on ESP32-S3 smart glasses that capture the scene and speak salience-ordered descriptions in near real time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DATASETS ============ -->
+  <section class="container" id="datasets">
+    <h2>Salience-Aware Datasets</h2>
+    <p class="body-text">
+      Existing captioning datasets do not convey the relative importance of visual elements, often lack real-world complexity, and are not designed around low vision user experiences. We therefore repurpose COCO, Flickr30K, and VizWiz into three salience-aware benchmarks. Each image is processed with QAGNet to produce a salience map; detected objects are ranked by salience score and passed with the image to Janus Pro-7B, which generates a ground-truth caption describing the objects exactly in order of importance.
+    </p>
+    <figure class="figure">
+      <img src="static/images/dataset.png" alt="Illustration of the salience-aware captioning ground-truth generation pipeline.">
+      <figcaption><b>Ground-truth generation pipeline.</b> The input image is processed to produce a salience map, from which salient objects are detected and reordered. A salience-aware description is then generated, highlighting the most salient elements first.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="static/images/datacomparizon.png" alt="Examples of images, salience masks, and salience-aware ground-truth captions from the three datasets.">
+      <figcaption><b>Dataset examples.</b> Images, salience masks, and salience-aware ground-truth captions from Salience COCO, Salience Flickr, and Salience VizWiz.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="static/images/datadistribution2.png" alt="Statistics of word counts and sentence lengths across the three datasets.">
+      <figcaption><b>Dataset statistics.</b> Distributions of word counts and sentence lengths across the three datasets.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Statistics for the three salience image captioning datasets.</caption>
+        <thead>
+          <tr><th></th><th>Salience COCO</th><th>Salience Flickr</th><th>Salience VizWiz</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>#Images</td><td>8,295</td><td>8,725</td><td>1,045</td></tr>
+          <tr><td>#Total words</td><td>728,043</td><td>712,516</td><td>73,689</td></tr>
+          <tr><td>#Caption sentences</td><td>46,012</td><td>46,190</td><td>4,815</td></tr>
+          <tr><td>Avg. sentences</td><td>5</td><td>5</td><td>4</td></tr>
+          <tr><td>Vocabulary size</td><td>6,657</td><td>6,882</td><td>2,854</td></tr>
+          <tr><td>Avg. words per sentence</td><td>16</td><td>15</td><td>15</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="body-text" style="font-size:0.92rem; color:var(--muted);">
+      <b>Human verification.</b> Four low vision participants (IRB-approved study) ranked the most salient objects on 120 sampled images. Agreement between participant rankings and our salience annotations reached Cohen's &kappa; = 0.70, indicating good alignment with the perceptual priorities of low vision users.
+    </p>
+    <p class="body-text">
+      &#11015;&#65039; <b>Download:</b> all three datasets are available on <a href="https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing" target="_blank" rel="noopener">Google Drive</a>.
+    </p>
+  </section>
+
+  <!-- ============ METHOD ============ -->
+  <section class="alt" id="method">
+    <div class="container">
+      <h2>Method: Salience-LLaVA</h2>
+      <p class="body-text">
+        Salience-LLaVA is a dual-branch multimodal architecture built on LLaVA. A <b>vision backbone branch</b> (CLIP-ViT) extracts patch-level image features, while a <b>multi-scale saliency branch</b> (ResNet-50 + QAGNet) produces instance-level saliency features trained on genuine human fixation data. The projected saliency features are fused with the visual features, passed through a linear layer, concatenated with the tokenized instruction, and fed to Vicuna to generate a salience-ordered caption. Training uses LoRA plus the new projection layers, keeping the pretrained backbone frozen.
+      </p>
+      <figure class="figure">
+        <img src="static/images/pipeline_fin.png" alt="Overview of the Salience-LLaVA framework.">
+        <figcaption><b>Framework overview.</b> The model extracts visual features with CLIP-ViT and saliency features with ResNet-50 + QAGNet. Projected salience features are fused with image features, combined with instruction embeddings, and fed into Vicuna to generate the salience-aware caption.</figcaption>
+      </figure>
+      <figure class="figure">
+        <img src="static/images/Q1_updated.png" alt="QAGNet produces context-dependent salience rankings across different scenes.">
+        <figcaption><b>Context-dependent salience.</b> QAGNet does not produce fixed rankings: a traffic light ranks highest in a street-crossing scene, a person dominates a social setting, and a cup outranks a person in a dining scenario &mdash; enabling adaptive prioritization without task-specific rules.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="container" id="results">
+    <h2>Results</h2>
+    <p class="body-text">
+      We evaluate on all three salience datasets with conventional captioning metrics (BLEU, CIDEr, METEOR, ROUGE) and our salience-specific metrics (SCMI and Wu-Palmer SCMI). Salience-LLaVA outperforms zero-shot and fine-tuned baselines &mdash; including recent salience-driven and assistive VLMs (SCOPE, WalkVLM) and two-shot-prompted state-of-the-art MLLMs &mdash; on nearly all metrics, with the largest gains on salience-ordering accuracy.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Comparison on the three salience datasets. Best results per dataset are highlighted.</caption>
+        <thead>
+          <tr><th>Dataset</th><th>Model</th><th>B-1</th><th>B-2</th><th>B-3</th><th>B-4</th><th>CIDEr</th><th>METEOR</th><th>R-1</th><th>R-2</th><th>R-L</th><th>SCMI</th><th>WP-SCMI</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="group" colspan="13">Salience COCO</td></tr>
+          <tr><td></td><td>DeCap</td><td>0.35</td><td>0.18</td><td>0.06</td><td>0.03</td><td>0.07</td><td>0.26</td><td>0.38</td><td>0.09</td><td>0.23</td><td>0.35</td><td>0.44</td></tr>
+          <tr><td></td><td>GRIT</td><td>0.27</td><td>0.13</td><td>0.05</td><td>0.03</td><td>0.03</td><td>0.19</td><td>0.35</td><td>0.09</td><td>0.23</td><td>0.28</td><td>0.32</td></tr>
+          <tr><td></td><td>Tag2Text</td><td>0.27</td><td>0.14</td><td>0.06</td><td>0.02</td><td>0.05</td><td>0.21</td><td>0.36</td><td>0.10</td><td>0.24</td><td>0.33</td><td>0.38</td></tr>
+          <tr><td></td><td>LLaVA</td><td>0.25</td><td>0.15</td><td>0.09</td><td>0.06</td><td>0.12</td><td>0.21</td><td>0.34</td><td>0.13</td><td>0.22</td><td>0.36</td><td>0.28</td></tr>
+          <tr><td></td><td>LLaVA-FT</td><td>0.46</td><td>0.32</td><td>0.22</td><td>0.20</td><td>0.40</td><td>0.40</td><td>0.55</td><td>0.30</td><td>0.35</td><td>0.51</td><td>0.58</td></tr>
+          <tr><td></td><td>SCOPE</td><td>0.44</td><td>0.27</td><td>0.17</td><td>0.10</td><td>0.17</td><td>0.33</td><td>0.48</td><td>0.19</td><td>0.30</td><td>0.53</td><td>0.60</td></tr>
+          <tr><td></td><td>WalkVLM</td><td>0.45</td><td>0.31</td><td>0.21</td><td>0.15</td><td>0.29</td><td>0.38</td><td>0.53</td><td>0.25</td><td>0.34</td><td>0.53</td><td>0.60</td></tr>
+          <tr><td></td><td>Gemma4 (2-shot)</td><td>0.24</td><td>0.15</td><td>0.09</td><td>0.06</td><td>0.13</td><td>0.19</td><td>0.31</td><td>0.12</td><td>0.20</td><td>0.25</td><td>0.31</td></tr>
+          <tr><td></td><td>Qwen3.6 (2-shot)</td><td>0.39</td><td>0.25</td><td>0.15</td><td>0.10</td><td>0.12</td><td>0.39</td><td>0.50</td><td>0.19</td><td>0.30</td><td>0.50</td><td>0.55</td></tr>
+          <tr class="ours"><td></td><td>Ours</td><td class="best">0.52</td><td class="best">0.37</td><td class="best">0.28</td><td class="best">0.21</td><td class="best">0.45</td><td class="best">0.43</td><td class="best">0.60</td><td class="best">0.33</td><td class="best">0.40</td><td class="best">0.60</td><td class="best">0.63</td></tr>
+
+          <tr><td class="group" colspan="13">Salience Flickr</td></tr>
+          <tr><td></td><td>DeCap</td><td>0.35</td><td>0.20</td><td>0.16</td><td>0.06</td><td>0.06</td><td>0.26</td><td>0.37</td><td>0.08</td><td>0.21</td><td>0.42</td><td>0.51</td></tr>
+          <tr><td></td><td>GRIT</td><td>0.28</td><td>0.14</td><td>0.06</td><td>0.03</td><td>0.03</td><td>0.19</td><td>0.35</td><td>0.09</td><td>0.23</td><td>0.27</td><td>0.29</td></tr>
+          <tr><td></td><td>Tag2Text</td><td>0.28</td><td>0.13</td><td>0.05</td><td>0.03</td><td>0.05</td><td>0.21</td><td>0.37</td><td>0.10</td><td>0.23</td><td>0.40</td><td>0.43</td></tr>
+          <tr><td></td><td>LLaVA</td><td>0.30</td><td>0.19</td><td>0.12</td><td>0.07</td><td>0.13</td><td>0.25</td><td>0.39</td><td>0.15</td><td>0.25</td><td>0.38</td><td>0.27</td></tr>
+          <tr><td></td><td>LLaVA-FT</td><td>0.44</td><td>0.32</td><td>0.24</td><td>0.20</td><td>0.42</td><td>0.37</td><td>0.51</td><td>0.28</td><td>0.36</td><td>0.73</td><td>0.80</td></tr>
+          <tr><td></td><td>SCOPE</td><td>0.41</td><td>0.25</td><td>0.15</td><td>0.10</td><td>0.14</td><td>0.33</td><td>0.46</td><td>0.16</td><td>0.29</td><td>0.53</td><td>0.59</td></tr>
+          <tr><td></td><td>WalkVLM</td><td>0.24</td><td>0.14</td><td>0.10</td><td>0.05</td><td>0.10</td><td>0.34</td><td>0.34</td><td>0.13</td><td>0.21</td><td>0.68</td><td>0.76</td></tr>
+          <tr><td></td><td>Gemma4 (2-shot)</td><td>0.28</td><td>0.17</td><td>0.11</td><td>0.07</td><td>0.17</td><td>0.23</td><td>0.34</td><td>0.13</td><td>0.23</td><td>0.35</td><td>0.45</td></tr>
+          <tr><td></td><td>Qwen3.6 (2-shot)</td><td>0.39</td><td>0.25</td><td>0.16</td><td>0.10</td><td>0.14</td><td>0.39</td><td>0.50</td><td>0.19</td><td>0.30</td><td>0.58</td><td>0.65</td></tr>
+          <tr class="ours"><td></td><td>Ours</td><td class="best">0.50</td><td class="best">0.35</td><td class="best">0.26</td><td class="best">0.20</td><td class="best">0.45</td><td class="best">0.42</td><td class="best">0.57</td><td class="best">0.31</td><td class="best">0.39</td><td class="best">0.79</td><td class="best">0.83</td></tr>
+
+          <tr><td class="group" colspan="13">Salience VizWiz</td></tr>
+          <tr><td></td><td>DeCap</td><td>0.32</td><td>0.15</td><td>0.05</td><td>0.02</td><td>0.03</td><td>0.26</td><td>0.37</td><td>0.08</td><td>0.22</td><td>0.53</td><td>0.65</td></tr>
+          <tr><td></td><td>GRIT</td><td>0.33</td><td>0.17</td><td>0.07</td><td>0.04</td><td>0.05</td><td>0.22</td><td>0.38</td><td>0.10</td><td>0.25</td><td>0.55</td><td>0.61</td></tr>
+          <tr><td></td><td>Tag2Text</td><td>0.26</td><td>0.14</td><td>0.06</td><td>0.03</td><td>0.05</td><td>0.20</td><td>0.37</td><td>0.12</td><td>0.25</td><td>0.59</td><td>0.62</td></tr>
+          <tr><td></td><td>LLaVA</td><td>0.11</td><td>0.07</td><td>0.05</td><td>0.03</td><td>0.05</td><td>0.13</td><td>0.24</td><td>0.10</td><td>0.20</td><td>0.40</td><td>0.43</td></tr>
+          <tr><td></td><td>LLaVA-FT</td><td>0.35</td><td>0.25</td><td>0.18</td><td>0.13</td><td>0.31</td><td>0.29</td><td>0.43</td><td>0.22</td><td>0.30</td><td>0.60</td><td>0.49</td></tr>
+          <tr><td></td><td>SCOPE</td><td>0.43</td><td>0.27</td><td>0.17</td><td>0.11</td><td>0.24</td><td>0.33</td><td>0.48</td><td>0.20</td><td>0.31</td><td>0.65</td><td>0.74</td></tr>
+          <tr><td></td><td>WalkVLM</td><td>0.27</td><td>0.18</td><td>0.11</td><td>0.08</td><td>0.06</td><td>0.36</td><td>0.39</td><td>0.17</td><td>0.25</td><td>0.69</td><td class="best">0.79</td></tr>
+          <tr><td></td><td>Gemma4 (2-shot)</td><td>0.30</td><td>0.19</td><td>0.12</td><td>0.08</td><td>0.15</td><td>0.25</td><td>0.38</td><td>0.16</td><td>0.26</td><td>0.41</td><td>0.50</td></tr>
+          <tr><td></td><td>Qwen3.6 (2-shot)</td><td>0.39</td><td>0.26</td><td>0.17</td><td>0.12</td><td>0.14</td><td class="best">0.40</td><td>0.50</td><td>0.22</td><td>0.32</td><td>0.63</td><td>0.69</td></tr>
+          <tr class="ours"><td></td><td>Ours</td><td class="best">0.47</td><td class="best">0.32</td><td class="best">0.23</td><td class="best">0.17</td><td class="best">0.36</td><td>0.38</td><td class="best">0.54</td><td class="best">0.27</td><td class="best">0.35</td><td class="best">0.71</td><td class="best">0.79</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ REAL-WORLD ============ -->
+  <section class="alt" id="real-world">
+    <div class="container">
+      <h2>Real-World Deployment on Assistive Glasses</h2>
+      <p class="body-text">
+        We integrate Salience-LLaVA into a wearable assistive device built around the Seeed Studio XIAO ESP32-S3 Sense, a thumb-sized board with an OV2640 camera, Wi-Fi, and Bluetooth. When the user presses the trigger button, the glasses capture an image and send it to a backend server for salience-aware caption generation; the caption is converted to speech and returned through the earphone, giving low vision users near real-time, importance-ordered auditory descriptions of their surroundings. In a pilot study on real-world indoor and street-crossing scenes, agreement between participant-selected important objects and the system's audio output reached Wu-Palmer SCMI 0.64 and Cohen's &kappa; = 0.62.
+      </p>
+      <figure class="figure">
+        <img src="static/images/glasses.png" alt="Smart glasses with sensors, earphone, and camera used in the real-world experiment.">
+        <figcaption><b>Assistive glasses hardware.</b> Smart glasses used in our real-world experiment with smart sensors, earphone, and camera.</figcaption>
+      </figure>
+      <figure class="figure narrow" style="max-width:640px; margin-left:auto; margin-right:auto;">
+        <img src="static/images/workflow.png" alt="Sequence diagram of the user interaction workflow through the ESP32-S3.">
+        <figcaption><b>System workflow.</b> A sequence diagram outlining how the user interacts with the captioning model deployed at the backend through the ESP32-S3.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ BIBTEX ============ -->
+  <section class="container" id="bibtex">
+    <h2>BibTeX</h2>
+    <pre class="bibtex">@article{liang2025focus,
+  title   = {Focus Where It Counts: A Salience-Driven Vision-Language Model for Low Vision Assistance},
+  author  = {Liang, Jiazhao and Huang, Hao and Yuan, Shuaihang and Wen, Congcong and
+             Bethala, Geeta Chandra Raju and Hamilton-Fletcher, Giles and Hao, Yu and
+             Rizzo, John-Ross and Wang, Mengyu and Tzes, Anthony and Fang, Yi},
+  journal = {IEEE Transactions on Neural Networks and Learning Systems},
+  year    = {2025}
+}</pre>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>Code: <a href="https://github.com/topo-focus/Topofocus" target="_blank" rel="noopener">github.com/topo-focus/Topofocus</a> &nbsp;&middot;&nbsp; Datasets: <a href="https://drive.google.com/file/d/1zxZJOPXhlaRaUoEccA_0QA5ERH6jeezZ/view?usp=sharing" target="_blank" rel="noopener">Google Drive</a></p>
+      <p style="margin-top:8px;">This research was partially funded through NYUAD's Research Institute via Tamkeen and project CG010, with additional support from NSF Grant No. ITE-2345139.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
